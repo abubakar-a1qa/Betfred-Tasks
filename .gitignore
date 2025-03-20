@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/RestSharp-SwaggerUI-ExecuteAutomation/.idea
+/Selenium-KP2-FileUpload/.idea
+/Selenium-KP2-FileUpload/Selenium-KP2-FileUpload/Properties
+/TestRail-Integration/.idea
+/TestRail-Integration/TestRail-Integration/Properties

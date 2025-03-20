@@ -22,14 +22,10 @@ namespace TestRail_Integration.Tests
         protected static readonly int maxWait = 5;
         
         private readonly string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "config.json");
-        private readonly string allureConfig = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "allureConfig.json");
 
         [SetUp]
         public void Setup()
         {
-            string json = File.ReadAllText(configPath);
-            string url = JsonDocument.Parse(json).RootElement.GetProperty("url").GetString();
-            
             new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
             var chromeOptions = new ChromeOptions();
             chromeOptions.AddUserProfilePreference("download.default_directory", downloadDirectory);
@@ -38,6 +34,9 @@ namespace TestRail_Integration.Tests
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(maxWait));
 
             driver.Manage().Window.Maximize();
+            
+            string json = File.ReadAllText(configPath);
+            string url = JsonDocument.Parse(json).RootElement.GetProperty("url").GetString();
             driver.Navigate().GoToUrl(url);
         }
 
@@ -45,6 +44,11 @@ namespace TestRail_Integration.Tests
         public void Teardown()
         {
             driver.Quit();
+        }
+
+        protected string CaptureScreenshot(string screenshotName)
+        {
+            return Utils.CaptureScreenshot.TakeScreenshot(driver, screenshotName, downloadDirectory);
         }
     }
 }

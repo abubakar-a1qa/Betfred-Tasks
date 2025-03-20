@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using System.IO;
 using NUnit.Framework;
 using TestRail_Integration.Pages;
 using TestRail_Integration.Utils;
@@ -17,30 +17,48 @@ namespace TestRail_Integration.Tests
         }
 
         [Test]
-        public async Task CookieTests()
+        public void CookieTests()
         {
-            string testCaseId = "28641865"; 
+            const string testCaseId = "28641865";
+            string screenshotPath = string.Empty;
 
             try
             {
                 // Test Steps
                 _cookiesPage.AddCookie("testKey", "testValue");
-                
-                var cookie = _cookiesPage.GetCookie("testKey");
-                Assert.That(cookie, Is.EqualTo("testValue"), "Cookie was not added");
+                Assert.That(_cookiesPage.GetCookie("testKey"), Is.EqualTo("testValue"));
                 
                 _cookiesPage.RemoveCookie("testKey");
-                
-                var cookieAfterRemove = _cookiesPage.GetCookie("testKey");
-                Assert.That(cookieAfterRemove, Is.Null, "Cookie was not removed");
+                Assert.That(_cookiesPage.GetCookie("testKey"), Is.Null);
 
-                // Report to TestRail
-                await TestRailManager.AddResultsForTestCase(testCaseId, TestRailManager.TestCasePassStatus, "Test Passed");
+                // Report success with screenshot
+                screenshotPath = CaptureScreenshot("CookieTest_Success");
+                TestRailManager.AddResultsForTestCase(
+                    testCaseId,
+                    TestRailManager.TestCasePassStatus,
+                    "All cookie operations completed successfully",
+                    screenshotPath
+                );
             }
             catch (Exception ex)
             {
-                await TestRailManager.AddResultsForTestCase(testCaseId, TestRailManager.TestCaseFailStatus, $"Test Failed: {ex.Message}");
+                // Report failure with screenshot
+                screenshotPath = CaptureScreenshot("CookieTest_Failure");
+                TestRailManager.AddResultsForTestCase(
+                    testCaseId,
+                    TestRailManager.TestCaseFailStatus,
+                    $"Test Failed: {ex.Message}",
+                    screenshotPath
+                );
                 throw;
+            }
+            finally
+            {
+                // Cleanup temporary files
+                if (File.Exists(screenshotPath))
+                {
+                    File.Delete(screenshotPath);
+                }
             }
         }
     }

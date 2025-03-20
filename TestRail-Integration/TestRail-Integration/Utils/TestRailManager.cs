@@ -1,14 +1,13 @@
 using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using TestRail_Integration.Gurock.TestRail;
 
 namespace TestRail_Integration.Utils
 {
     public static class TestRailManager
     {
-        // Configuration (Update these values)
         public static string TestRunId = "100007";
         public static string TestRailUserName = "a.bakar@a1qa.com";
         public static string TestRailPassword = Environment.GetEnvironmentVariable("TR_PASS");
@@ -16,49 +15,50 @@ namespace TestRail_Integration.Utils
         public static int TestCasePassStatus = 1;
         public static int TestCaseFailStatus = 5;
 
-        private static readonly HttpClient httpClient = new HttpClient();
-
-        static TestRailManager()
+        private static APIClient GetClient()
         {
-            var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{TestRailUserName}:{TestRailPassword}"));
-            httpClient.DefaultRequestHeaders.Authorization = 
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", authToken);
+            return new APIClient(TestRailEngineUrl)
+            {
+                User = TestRailUserName,
+                Password = TestRailPassword
+            };
         }
 
-        public static async Task AddResultsForTestCase(string testCaseId, int status, string resultText)
+        public static void AddResultsForTestCase(
+            string testCaseId,
+            int status,
+            string resultText,
+            string screenshotPath)
         {
+            var client = GetClient();
+            
             try
             {
-                // Validate numeric IDs
-                if (!int.TryParse(testCaseId, out int caseId) || 
-                    !int.TryParse(TestRunId, out int runId))
-                {
-                    throw new ArgumentException("Invalid Case ID or Run ID");
-                }
+                // Send test result
+                var result = (JObject)client.SendPost(
+                    $"add_result_for_case/{TestRunId}/{testCaseId}",
+                    new Dictionary<string, object>
+                    {
+                        {"status_id", status},
+                        {"comment", $"Test execution completed. {resultText}"}
+                    }
+                );
 
-                // API endpoint
-                var endpoint = $"{TestRailEngineUrl}/index.php?/api/v2/add_result_for_case/{runId}/{caseId}";
-                
-                // Request data
-                var data = new 
-                { 
-                    status_id = status, 
-                    comment = $"Test Result: {resultText}" 
-                };
+                // Extract the result ID from the response
+                var resultId = result["id"].ToString();
 
-                // Send request
-                var jsonContent = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-                var response = await httpClient.PostAsync(endpoint, jsonContent);
-                
-                if (!response.IsSuccessStatusCode)
+                // Attach screenshot if exists
+                if (!string.IsNullOrEmpty(screenshotPath) && File.Exists(screenshotPath))
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    throw new Exception($"TestRail API Error: {errorContent}");
+                    client.SendPost(
+                        $"add_attachment_to_result/{resultId}",
+                        screenshotPath
+                    );
                 }
             }
-            catch (Exception ex)
+            catch (APIException ex)
             {
-                Console.WriteLine($"Failed to send results to TestRail: {ex.Message}");
+                Console.WriteLine($"TestRail API Error: {ex.Message}");
                 throw;
             }
         }

@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp-SwaggerUI-ExecuteAutomation", "RestSharp-SwaggerUI-ExecuteAutomation\RestSharp-SwaggerUI-ExecuteAutomation.csproj", "{4D134C3B-E40E-4BBB-B941-5751FAF48181}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D134C3B-E40E-4BBB-B941-5751FAF48181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D134C3B-E40E-4BBB-B941-5751FAF48181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D134C3B-E40E-4BBB-B941-5751FAF48181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D134C3B-E40E-4BBB-B941-5751FAF48181}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
